@@ -1,0 +1,12 @@
+{
+  "num_test": 40,
+  "num_vehicle": 20,
+  "vehicle_rate": 20,
+  "comp_dense": 1,
+  "window_length": 2.0,
+  "comp_factor": 1.0,
+  "seed_prog": [
+    33,34,35
+  ],
+  "safety_lib": 0
+}
