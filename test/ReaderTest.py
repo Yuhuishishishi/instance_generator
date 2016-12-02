@@ -1,5 +1,5 @@
 import unittest
-from SeedReader import ConfigReader, Params, Info, GenInfoReader
+from InputOutput import ConfigReader, Params, Info, GenInfoReader
 
 
 class ConfigReaderTest(unittest.TestCase):

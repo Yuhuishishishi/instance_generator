@@ -123,3 +123,26 @@ class GenInfoReader:
         df_test = pd.read_sql_query(q, conn)
         for _, d in df_test.iterrows():
             Info.SUB_CAT_FREQ[d['subcategoryID']] = d['cnt']
+
+
+TestRequest = namedtuple('TestRequest', 'test_id, release, deadline, prep, tat, analysis, dur')
+Vehicle = namedtuple('Vehicle', 'vehicle_id, release')
+
+
+class Instance(namedtuple('Instance', 'tests, vehicles, rehit')):
+    def json_repr(self):
+        rehit = defaultdict(dict)
+        for first, second in self.rehit:
+            rehit[str(first)][str(second)] = self.rehit[first, second]
+        return dict(tests=[t._asdict() for t in self.tests],
+                    vehicles=[v._asdict() for v in self.vehicles],
+                    rehit=rehit)
+
+
+class OutputWriter:
+    def __init__(self, output_path):
+        self.output_path = output_path
+
+    def write_instance(self, instance):
+        with open(self.output_path, 'wb') as out:
+            json.dump(instance, out)
