@@ -1,7 +1,7 @@
 {
   "num_test": 40,
   "num_vehicle": 20,
-  "vehicle_rate": 20,
+  "vehicle_rate": 5,
   "comp_dense": 1,
   "window_length": 2.0,
   "comp_factor": 1.0,

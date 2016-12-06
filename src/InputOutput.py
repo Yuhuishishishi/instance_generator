@@ -130,13 +130,10 @@ TestRequest = namedtuple('TestRequest', 'test_id, release, deadline, prep, tat, 
 Vehicle = namedtuple('Vehicle', 'vehicle_id, release')
 
 
-
-
-
 class OutputWriter:
     def __init__(self, output_path):
         self.output_path = output_path
 
     def write_instance(self, instance):
         with open(self.output_path, 'wb') as out:
-            json.dump(instance, out)
+            json.dump(instance.json_repr(), out)
