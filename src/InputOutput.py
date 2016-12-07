@@ -80,20 +80,29 @@ class GenInfoReader:
         else:
             df_comp = pd.read_sql_query(q2, conn)
 
-        def max_cutoff(rehitid1, rehitid2):
-            return df_comp[
-                (df_comp['rehitCategoryId1'] == rehitid1) & (df_comp['rehitCategoryId2'] == rehitid2)] \
-                .speedCutoff.max()
 
-        def is_comp(rehitid1, rehitid2):
+        # cache the rehit rules table
+        rehit_rules = {}
+        for _, data in df_comp.iterrows():
+            rehit_id1, rehit_id2 = data['rehitCategoryId1'], data['rehitCategoryId2']
+            speedcutoff = data['speedCutoff']
+            maxcutoff = rehit_rules.get((rehit_id1, rehit_id2), -2)
+            if speedcutoff > maxcutoff:
+                rehit_rules[rehit_id1, rehit_id2] = speedcutoff
+
+        def max_cutoff(rehitid1, rehitid2):
+            return rehit_rules[rehitid1, rehitid2]
+
+        def is_comp(mode_id1, mode_id2):
+            rehitid1, rehitid2 = Info.TEST_MODE[mode_id1].rehit_id, Info.TEST_MODE[mode_id2].rehit_id
             cutoff = max_cutoff(rehitid1, rehitid2)
-            if Info.TEST_MODE[rehitid1].speed <= cutoff:
+            if Info.TEST_MODE[mode_id1].speed <= cutoff:
                 return True
             return False
 
-        rehitid_list = df_safety_mode.rehitCategoryId.unique()
-        for id1 in rehitid_list:
-            for id2 in rehitid_list:
+        mode_id_list = Info.TEST_MODE.keys()
+        for id1 in mode_id_list:
+            for id2 in mode_id_list:
                 Info.COMP_MAT[id1, id2] = is_comp(id1, id2)
 
         # timing categories
