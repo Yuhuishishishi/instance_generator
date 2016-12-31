@@ -118,7 +118,7 @@ class GenInfoReader:
             tat = d['tat']
             analysis = d['analysis'] + d['nonVev']
             Info.MODE_TIMING[safety_id].append(TimingCategory(
-                prep=prep, tat=tat, analysis=analysis
+                prep=int(prep), tat=int(tat), analysis=int(analysis)
             ))
 
         # distribution of tests

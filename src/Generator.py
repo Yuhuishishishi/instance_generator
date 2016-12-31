@@ -19,13 +19,14 @@ class InstanceGenerator:
         self.config_path = config_path
         self.db_path = db_path
 
+        db_reader = GenInfoReader(self.db_path)
+        db_reader.read_db()
+
     def gen_instance(self):
         # initialize the readers
         config_reader = ConfigReader(self.config_path)
         config_reader.read_config()
 
-        db_reader = GenInfoReader(self.db_path)
-        db_reader.read_db()
         random.seed(1024)
 
         # generate vehicles according to vehicle rate
@@ -65,7 +66,12 @@ class InstanceGenerator:
         for _, v in Info.TEST_MODE.iteritems():
             sub_id_to_mode[v.sub_id].append(v)
 
-        default_timing = next(Info.MODE_TIMING.itervalues())
+        default_timing = None
+        for l in Info.MODE_TIMING.values():
+            if l:
+                default_timing = l[:]
+                break
+
         for i in range(0, Params.NUM_TEST):
             # sample the sub_id
             sub_id = random.choice(sub_id_sample)
@@ -87,8 +93,8 @@ class InstanceGenerator:
                 deadline = deadline_map[2]
             # create the test
             test = TestRequest(test_id=i,
-                               release=release,
-                               deadline=deadline,
+                               release=int(release),
+                               deadline=int(deadline),
                                prep=timing.prep,
                                tat=timing.tat,
                                analysis=timing.analysis,
@@ -97,6 +103,7 @@ class InstanceGenerator:
             test_list.append(test)
 
         # construct the rehit matrix
+        print Params.COMP_DENSE
         rehit = {}
         for t1 in test_list:
             tid1 = t1.test_id
@@ -105,7 +112,13 @@ class InstanceGenerator:
                 if tid1 == tid2:
                     rehit[tid1, tid2] = False
                 else:
-                    rehit[tid1, tid2] = Info.COMP_MAT[t1.rehit_id, t2.rehit_id]
+                    # simulate
+                    rnd = random.random()
+                    if rnd > Params.COMP_DENSE:
+                        rehit[tid1, tid2] = True
+                    else:
+                        rehit[tid1,tid2] = False
+                    # rehit[tid1, tid2] = Info.COMP_MAT[t1.rehit_id, t2.rehit_id]
 
         # create the instance
         inst = Instance(tests=test_list,

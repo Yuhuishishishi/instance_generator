@@ -5,7 +5,7 @@ from InputOutput import Params, OutputWriter
 
 
 class GeneratorTest(unittest.TestCase):
-    SAMPLE_CONFIG = '../sample_config.json'
+    SAMPLE_CONFIG = r'C:\Users\yuhuishi\PycharmProjects\instance_generator\config_files\early_stage_50_50_0.9_1.5.json'
     DB_PATH = '../db/tp3s.db'
     OUT_PATH = './result.tp3s'
 
