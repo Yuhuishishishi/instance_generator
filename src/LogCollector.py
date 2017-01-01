@@ -1,6 +1,6 @@
 import re
 import os
-import csv
+
 
 def parse_log(dir):
     fields = ["num_test", "num_vehicle", "density", "num_seq", "iterations", "relax_obj_val",
@@ -26,7 +26,7 @@ def parse_log(dir):
            pat_obj_val, pat_time, pat_opt_gap, pat_root_obj, pat_best_bound, pat_nodes]
     for log in os.listdir(dir):
         if log.endswith(".log"):
-            with open(os.path.join(dir,log), 'rb') as f:
+            with open(os.path.join(dir, log), 'rb') as f:
                 text = f.read()
             stats = []
             if text:
@@ -43,9 +43,7 @@ def parse_log(dir):
         f.write('\n')
         f.write("\n".join(data))
 
+
 if __name__ == '__main__':
     log_dir = r'C:\Users\yuhuishi\Desktop\projects\TP3S_column_generation\logs\branchandprice'
     parse_log(log_dir)
-
-
-
