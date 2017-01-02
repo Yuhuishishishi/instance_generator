@@ -2,9 +2,9 @@ import json
 import os
 import shutil
 
-SMALL_PATH = "/home/yuhui/Documents/tp3s/instance_generator/instance/small"
-MODERATE_PATH = "/home/yuhui/Documents/tp3s/instance_generator/instance/moderate"
-LARGE_PATH = "/home/yuhui/Documents/tp3s/instance_generator/instance/large"
+SMALL_PATH = "C:\Users\yuhuishi\PycharmProjects\instance_generator\instance\small"
+MODERATE_PATH = "C:\Users\yuhuishi\PycharmProjects\instance_generator\instance\moderate"
+LARGE_PATH = "C:\Users\yuhuishi\PycharmProjects\instance_generator\instance\large"
 
 
 def instance_id_mark():
@@ -51,8 +51,8 @@ def combine_instances(**inst_time_shift):
                 release += time_shift
                 deadline += time_shift
                 # prefix the id
-                test["test_id"] = "{inst_id}_{old_id}".format(inst_id=inst_id,
-                                                              old_id=test["test_id"])
+                # test["test_id"] = "{inst_id}_{old_id}".format(inst_id=inst_id,
+                #                                               old_id=test["test_id"])
                 test['deadline'] = deadline
                 test['release'] = release
             for vehicle in vehicles:
@@ -60,17 +60,17 @@ def combine_instances(**inst_time_shift):
                 release += time_shift
                 vehicle['release'] = release
                 # prefix the id
-                vehicle['vehicle_id'] = "{inst_id}_{old_id}".format(inst_id=inst_id,
-                                                                    old_id=vehicle['vehicle_id'])
-            # prefix the rehit matrix
-            rehit_matrix = j['rehit']
-            for id1 in rehit_matrix.keys():
-                new_id = "{inst_id}_{test_id}".format(inst_id=inst_id, test_id=id1)
-                rehit_matrix[new_id] = rehit_matrix.pop(id1)
-            for nest_dict in rehit_matrix.values():
-                for id in nest_dict.keys():
-                    new_id = "{inst_id}_{test_id}".format(inst_id=inst_id, test_id=id)
-                    nest_dict[new_id] = nest_dict.pop(id)
+                # vehicle['vehicle_id'] = "{inst_id}_{old_id}".format(inst_id=inst_id,
+                #                                                     old_id=vehicle['vehicle_id'])
+            # # prefix the rehit matrix
+            # rehit_matrix = j['rehit']
+            # for id1 in rehit_matrix.keys():
+            #     new_id = "{inst_id}_{test_id}".format(inst_id=inst_id, test_id=id1)
+            #     rehit_matrix[new_id] = rehit_matrix.pop(id1)
+            # for nest_dict in rehit_matrix.values():
+            #     for id in nest_dict.keys():
+            #         new_id = "{inst_id}_{test_id}".format(inst_id=inst_id, test_id=id)
+            #         nest_dict[new_id] = nest_dict.pop(id)
             fat_json.append(j)
 
     return fat_json
@@ -91,8 +91,8 @@ def search_for_inst_id(inst_id):
 
 
 def combine_two_instances():
-    files = sorted(os.listdir("/home/yuhui/Documents/tp3s/instance_generator/instance/multiple/small_seed"))
-    OUT_PATH = "/home/yuhui/Documents/tp3s/instance_generator/instance/multiple"
+    files = sorted(os.listdir("C:\Users\yuhuishi\PycharmProjects\instance_generator\instance\multiple\small_seed"))
+    OUT_PATH = "C:\Users\yuhuishi\PycharmProjects\instance_generator\instance\multiple\small_small"
     for f1 in files:
         inst_id1 = f1.split("_")[0]
         for f2 in files:
@@ -105,5 +105,22 @@ def combine_two_instances():
             with open(os.path.join(OUT_PATH, "{id1}_{id2}.tp3s".format(id1=inst_id1, id2=inst_id2)), 'wb') as f:
                 json.dump(fat_json, f)
 
+
+def json_wrapper():
+    folders = [SMALL_PATH, MODERATE_PATH, LARGE_PATH]
+    for folder in folders:
+        for f in os.listdir(folder):
+            if not f.endswith("tp3s"):
+                continue
+            inst_id = f.split("_")[0]
+            path = os.path.join(folder, f)
+            with open(path, 'rb') as fopen:
+                data = json.load(fopen)
+                data['inst_id'] = inst_id
+                wrapped = [data, ]
+            with open(path, 'wb') as fopen:
+                json.dump(wrapped, fopen)
+
+
 if __name__ == '__main__':
-    combine_two_instances()
+    json_wrapper()
