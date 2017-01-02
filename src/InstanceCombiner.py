@@ -6,6 +6,7 @@ SMALL_PATH = "/home/yuhui/Documents/tp3s/instance_generator/instance/small"
 MODERATE_PATH = "/home/yuhui/Documents/tp3s/instance_generator/instance/moderate"
 LARGE_PATH = "/home/yuhui/Documents/tp3s/instance_generator/instance/large"
 
+
 def instance_id_mark():
     # mark the small instance
     mark_instance_in_dir(SMALL_PATH, "s")
@@ -19,7 +20,8 @@ def instance_id_mark():
 
 def mark_instance_in_dir(dir, prefix):
     counter = 0
-    for f in os.listdir(dir):
+    files = sorted(os.listdir(dir))
+    for f in files:
         if f.endswith(".tp3s") and f.startswith("_"):
             src_path = os.path.join(dir, f)
             new_name = "{prefix}{id_counter}{orig_name}".format(prefix=prefix,
@@ -28,9 +30,6 @@ def mark_instance_in_dir(dir, prefix):
             dest_path = os.path.join(dir, new_name)
             shutil.move(src_path, dest_path)
             counter += 1
-
-def combine_two_instances(id1, id2):
-    pass
 
 
 def combine_instances(**inst_time_shift):
@@ -63,6 +62,15 @@ def combine_instances(**inst_time_shift):
                 # prefix the id
                 vehicle['vehicle_id'] = "{inst_id}_{old_id}".format(inst_id=inst_id,
                                                                     old_id=vehicle['vehicle_id'])
+            # prefix the rehit matrix
+            rehit_matrix = j['rehit']
+            for id1 in rehit_matrix.keys():
+                new_id = "{inst_id}_{test_id}".format(inst_id=inst_id, test_id=id1)
+                rehit_matrix[new_id] = rehit_matrix.pop(id1)
+            for nest_dict in rehit_matrix.values():
+                for id in nest_dict.keys():
+                    new_id = "{inst_id}_{test_id}".format(inst_id=inst_id, test_id=id)
+                    nest_dict[new_id] = nest_dict.pop(id)
             fat_json.append(j)
 
     return fat_json
@@ -76,14 +84,26 @@ def search_for_inst_id(inst_id):
     else:
         target_dir = LARGE_PATH
     for f in os.listdir(target_dir):
-        if f.startswith(inst_id):
+        id_sec = f.split("_")[0]
+        if id_sec == inst_id:
             return os.path.join(target_dir, f)
     return
 
 
-
-
-
+def combine_two_instances():
+    files = sorted(os.listdir("/home/yuhui/Documents/tp3s/instance_generator/instance/multiple/small_seed"))
+    OUT_PATH = "/home/yuhui/Documents/tp3s/instance_generator/instance/multiple"
+    for f1 in files:
+        inst_id1 = f1.split("_")[0]
+        for f2 in files:
+            inst_id2 = f2.split("_")[0]
+            if f1 == f2:
+                continue
+            # combine
+            arg = {inst_id1: 0, inst_id2: 0}
+            fat_json = combine_instances(**arg)
+            with open(os.path.join(OUT_PATH, "{id1}_{id2}.tp3s".format(id1=inst_id1, id2=inst_id2)), 'wb') as f:
+                json.dump(fat_json, f)
 
 if __name__ == '__main__':
-    instance_id_mark()
+    combine_two_instances()
