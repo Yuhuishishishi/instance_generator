@@ -40,8 +40,8 @@ def combine_instances(**inst_time_shift):
         inst_json_path = search_for_inst_id(inst_id)
         assert inst_json_path
         with open(inst_json_path, 'rb') as f:
-            j = json.load(f)
-            j['inst_id'] = inst_id
+            j = json.load(f)[0]
+            # j['inst_id'] = inst_id
             # shift the timing information
             tests = j['tests']
             vehicles = j['vehicles']
@@ -91,11 +91,13 @@ def search_for_inst_id(inst_id):
 
 
 def combine_two_instances():
-    files = sorted(os.listdir("C:\Users\yuhuishi\PycharmProjects\instance_generator\instance\multiple\small_seed"))
-    OUT_PATH = "C:\Users\yuhuishi\PycharmProjects\instance_generator\instance\multiple\small_small"
-    for f1 in files:
+    small_files = sorted(os.listdir("C:\Users\yuhuishi\PycharmProjects\instance_generator\instance\multiple\small_seed"))
+    moderate_files = sorted(
+        os.listdir("C:\Users\yuhuishi\PycharmProjects\instance_generator\instance\multiple\moderate_seed"))
+    OUT_PATH = "C:\Users\yuhuishi\PycharmProjects\instance_generator\instance\multiple\moderate_moderate"
+    for f1 in moderate_files:
         inst_id1 = f1.split("_")[0]
-        for f2 in files:
+        for f2 in moderate_files:
             inst_id2 = f2.split("_")[0]
             if f1 == f2:
                 continue
@@ -123,4 +125,4 @@ def json_wrapper():
 
 
 if __name__ == '__main__':
-    json_wrapper()
+    combine_two_instances()
