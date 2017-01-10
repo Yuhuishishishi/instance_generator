@@ -59,21 +59,23 @@ def combine_instances(**inst_time_shift):
                 release = vehicle['release']
                 release += time_shift
                 vehicle['release'] = release
-                # prefix the id
-                # vehicle['vehicle_id'] = "{inst_id}_{old_id}".format(inst_id=inst_id,
-                #                                                     old_id=vehicle['vehicle_id'])
-            # # prefix the rehit matrix
-            # rehit_matrix = j['rehit']
-            # for id1 in rehit_matrix.keys():
-            #     new_id = "{inst_id}_{test_id}".format(inst_id=inst_id, test_id=id1)
-            #     rehit_matrix[new_id] = rehit_matrix.pop(id1)
-            # for nest_dict in rehit_matrix.values():
-            #     for id in nest_dict.keys():
-            #         new_id = "{inst_id}_{test_id}".format(inst_id=inst_id, test_id=id)
-            #         nest_dict[new_id] = nest_dict.pop(id)
             fat_json.append(j)
 
     return fat_json
+
+
+def get_horizon_length(inst_json):
+    tests = inst_json['tests']
+    vehicles = inst_json['vehicles']
+
+    earlist_vehicle_release = min([v['release'] for v in vehicles])
+    longest_test_dur = max([t['dur'] for t in tests])
+    latest_test_deadline = max([t['deadline'] for t in tests])
+
+    horizon_start = earlist_vehicle_release
+    horizon_end = latest_test_deadline
+
+    return horizon_end - horizon_start + longest_test_dur
 
 
 def search_for_inst_id(inst_id):
@@ -90,21 +92,34 @@ def search_for_inst_id(inst_id):
     return
 
 
-def combine_two_instances():
-    small_files = sorted(os.listdir("C:\Users\yuhuishi\PycharmProjects\instance_generator\instance\multiple\small_seed"))
-    moderate_files = sorted(
-        os.listdir("C:\Users\yuhuishi\PycharmProjects\instance_generator\instance\multiple\moderate_seed"))
-    OUT_PATH = "C:\Users\yuhuishi\PycharmProjects\instance_generator\instance\multiple\moderate_moderate"
-    for f1 in moderate_files:
+def combine_two_instances(path1, path2, out_path, overlap=1.0):
+    created_inst = set()
+    files_in_path1 = filter(lambda x: x.endswith('.tp3s'), os.listdir(path1))
+    files_in_path2 = filter(lambda x: x.endswith('.tp3s'), os.listdir(path2))
+
+    for f1 in files_in_path1:
         inst_id1 = f1.split("_")[0]
-        for f2 in moderate_files:
+        for f2 in files_in_path2:
             inst_id2 = f2.split("_")[0]
             if f1 == f2:
                 continue
+            if (inst_id1, inst_id2) in created_inst \
+                    or (inst_id2, inst_id1) in created_inst:
+                continue
+            else:
+                created_inst.add((inst_id1, inst_id2))
+            # compute the overlap
+            inst_json_path = search_for_inst_id(inst_id1)
+            with open(inst_json_path, 'rb') as f:
+                j = json.load(f)[0]
+            inst1_length = get_horizon_length(j)
+            inst2_offset = inst1_length * (1 - overlap)
+
             # combine
-            arg = {inst_id1: 0, inst_id2: 0}
+            arg = {inst_id1: 0, inst_id2: inst2_offset}
             fat_json = combine_instances(**arg)
-            with open(os.path.join(OUT_PATH, "{id1}_{id2}.tp3s".format(id1=inst_id1, id2=inst_id2)), 'wb') as f:
+            with open(os.path.join(out_path, "{id1}_{id2}_overlap_{overlap}.tp3s".format(id1=inst_id1, id2=inst_id2,
+                                                                                         overlap=overlap)), 'wb') as f:
                 json.dump(fat_json, f)
 
 
@@ -125,4 +140,19 @@ def json_wrapper():
 
 
 if __name__ == '__main__':
-    combine_two_instances()
+    small_seed = "C:\Users\yuhuishi\PycharmProjects\instance_generator\instance\multiple\small_seed"
+    moderate_seed = "C:\Users\yuhuishi\PycharmProjects\instance_generator\instance\multiple\moderate_seed"
+    small_small_out = "C:\Users\yuhuishi\PycharmProjects\instance_generator\instance\multiple\small_small"
+    moderate_moderate_out = "C:\Users\yuhuishi\PycharmProjects\instance_generator\instance\multiple\moderate_moderate"
+    small_moderate_out = "C:\Users\yuhuishi\PycharmProjects\instance_generator\instance\multiple\small_moderate"
+    overlap = [0.25, 0.5, 0.75, 1.0]
+
+    # small + small
+    map(lambda x: combine_two_instances(small_seed, small_seed, small_small_out, x),
+        overlap)
+    # small + moderate
+    map(lambda x: combine_two_instances(small_seed, moderate_seed, small_moderate_out, x),
+        overlap)
+    # moderate + moderate
+    map(lambda x: combine_two_instances(moderate_seed, moderate_seed, moderate_moderate_out, x),
+        overlap)
