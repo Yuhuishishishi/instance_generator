@@ -45,6 +45,7 @@ def combine_instances(**inst_time_shift):
             # shift the timing information
             tests = j['tests']
             vehicles = j['vehicles']
+            time_shift = int(time_shift)
             for test in tests:
                 release = test['release']
                 deadline = test['deadline']
